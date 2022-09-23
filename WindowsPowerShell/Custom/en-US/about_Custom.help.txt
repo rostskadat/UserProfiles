@@ -1,0 +1,12 @@
+TOPIC
+    about_Custom
+
+SHORT DESCRIPTION
+    Useful functions loaded by the user profile
+
+LONG DESCRIPTION
+    Contains functions that I find useful when working with powershell.
+
+EXAMPLES
+    Wait-ForMe: Allow to avoid the computer to go to idle mode by moving the mouse every 10'
+    Search-Jar: Recursively search for jars in the current directory containing a specific class
