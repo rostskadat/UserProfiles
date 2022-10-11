@@ -17,7 +17,6 @@ function Search-Jar {
     Searches for the class com.example.MyClass in the jars found in the current directory 
     
     #>
-    
     Param(
         ## The class to search for
         [Parameter(Mandatory = $true)]
@@ -28,7 +27,7 @@ function Search-Jar {
     
     ## Create the URL that contains the Twitter search results
     Add-Type -AssemblyName System.IO.Compression, System.IO.Compression.FileSystem
-    $jars = Get-ChildItem -Recurse *.jar
+    $jars = Get-ChildItem -Recurse *.jar -ErrorAction SilentlyContinue
 
     foreach ($jar in $jars) {
         $archive = [System.IO.Compression.ZipFile]::OpenRead($jar)

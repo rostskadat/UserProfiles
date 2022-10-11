@@ -30,4 +30,3 @@ function Wait-ForMe {
         }
     }
 }
-Export-ModuleMember -Function Wait-ForMe

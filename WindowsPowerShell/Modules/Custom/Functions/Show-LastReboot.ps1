@@ -34,4 +34,3 @@ function Show-LastReboot {
         }
     }
 }
-Export-ModuleMember -Function Show-LastReboot
