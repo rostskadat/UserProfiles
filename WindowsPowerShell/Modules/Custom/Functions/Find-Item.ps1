@@ -9,12 +9,12 @@ function Find-Item {
     
     .SYNOPSIS
     
-    Set the hidden file attribute on dot files
+    Find all child element whose name matches the given pattern
     
     .EXAMPLE
     
-    PS > Find-Item -Recurse
-    Hide all dot files recursively
+    PS > Find-Item '.txt' -Recurse 
+    Find all the txt file in the current directory
     
     #>
     [CmdletBinding()]
