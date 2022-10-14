@@ -178,15 +178,16 @@ function Register-Breaks {
                     Start-Period $Now $Now ([Status]::Working).ToString()
                 }
                 elseif ($null -ne $StartIdleTime) {
+                    # we were idle until now
                     $RealIdleTime = [Math]::Floor([Decimal] ($Now - $StartIdleTime).TotalMinutes)
-                    # This was a real break ...
                     if ($RealIdleTime -ge $MinBreakTimeInMinutes) {
+                        # This was a real break ...
                         Stop-Period $Now
                         Start-Period $Now $Now ([Status]::Working).ToString()
-                        Write-Host "[$Now] | Idle period $StartIdleTime -> $Now -> Work period -> $Now"
+                        Write-Host "[$Now] | Idle Time (0'): Idle Period ($StartIdleTime -> $Now) -> Work period ($Now -> ...)"
                     }
                     else {
-                        Write-Host "[$Now] | Idle Time ($RealIdleTime ') < ${MinBreakTimeInMinutes}: not doing anyting yet ..."
+                        Write-Host "[$Now] | Idle Time ($RealIdleTime ' < ${MinBreakTimeInMinutes}): not doing anyting yet ..."
                         # Still working ...
                         Update-Period $Now
                     }
@@ -194,19 +195,25 @@ function Register-Breaks {
                 else {
                     # Still working ...
                     Update-Period $Now
-                    Write-Host "[$Now] | Updating Working Period with @ ${Now} (LastPeriod=$LastPeriod)..."
+                    if ($null -ne $LastPeriod) {
+                        $sd = $LastPeriod.StartDate
+                    }
+                    else {
+                        $sd = "..."
+                    }
+                    Write-Host "[$Now] | Idle Time (0'): Updating working Period ($sd -> ${Now})"
                 }
                 $StartIdleTime = $null
             }
             elseif ($IdleTime -eq 1) {
                 Update-Period $Now
                 $StartIdleTime = $Now.AddMinutes( - 1)
-                Write-Host "[$Now] | Idle Time (= 1'): Registering StartIdleTime to $StartIdleTime ..."
+                Write-Host "[$Now] | Idle Time (= 1'): Registering StartIdleTime = $StartIdleTime ..."
             }
             elseif ($IdleTime -eq $MinBreakTimeInMinutes) {
                 Stop-Period $StartIdleTime
                 Start-Period $StartIdleTime $Now ([Status]::Idle).ToString()
-                Write-Host "[$Now] | Idle Time (= MinBreakTime): Work period -> $StartIdleTime -> Idle period -> $StartIdleTime -> $Now ..."
+                Write-Host "[$Now] | Idle Time (= MinBreakTime): Work period (... -> $StartIdleTime) -> Idle period ($StartIdleTime -> $Now)"
             }
             elseif ($IdleTime -gt $MinBreakTimeInMinutes) {
                 Update-Period $Now
