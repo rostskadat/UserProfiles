@@ -31,23 +31,16 @@ function Start-AzLab {
         [ValidateNotNullOrEmpty()]
         $Location = "East US",
         [Parameter()]
-        [ValidateNotNullOrEmpty()]
-        $ResourceGroup = "pluralsight-resource-group"
+        $ResourceGroup
     )
     Set-StrictMode -Version 3
 
-#    Get-AzTenant -TenantId 47da9ac4-f585-4753-bf40-7c7c8fe635cf
-#    Id                                   Name                        Category Domains
-#    --                                   ----                        -------- -------
-#    47da9ac4-f585-4753-bf40-7c7c8fe635cf Pluralsight Labs Production Home     {psLabsProd.onmicrosoft.com, prod.pluralsightlabs.com}
     $SecureString = $Password | ConvertTo-SecureString -AsPlainText -Force
     $Credential = New-Object System.Management.Automation.PSCredential -ArgumentList $Username, $SecureString
-    Connect-AzAccount -Credential $Credential -ServicePrincipal
-
-    Set-AzDefault -ResourceGroupName $ResourceGroup
-
-    # Doing the same for az cli
-#    az login
-#    az config set "defaults.location=$Location"
-#    az config set defaults.group=$ResourceGroup
+    # The "Pluralsight Labs Production" tenant...
+    Connect-AzAccount -Credential $Credential -TenantId "47da9ac4-f585-4753-bf40-7c7c8fe635cf"
+    if ($null -ne $ResourceGroup) {
+        Set-AzDefault -ResourceGroupName $ResourceGroup
+    }
+    Write-Host -ForegroundColor Green "Once the Lab finished you can call the 'Disconnect-AzAccount' cmdlet" 
 }
