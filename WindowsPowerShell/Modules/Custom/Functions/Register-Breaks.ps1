@@ -13,6 +13,14 @@ Initialize the SQLite DB and exit
 PS > Register-Breaks -Dump | Export-Csv -Path Break.csv
 Enter a loop to register idle time during the day
 
+PS > Register-Breaks -DumpWork | Select-Object { ([DateTime]$_.StartDate).Date ; $_.DeltaSecond / 3600 } ([DateTime]$_.StartDate).Date ; $_.DeltaSecond / 3600
+-------------------------------------------------------
+{14/10/2022 0:00:00, 7,40722222222222}
+{17/10/2022 0:00:00, 8,70472222222222}
+{18/10/2022 0:00:00, 7,57277777777778}
+
+Gives you an idea of the time you spent working 
+
 #>
 function Register-Breaks {
     [CmdletBinding()]
@@ -33,7 +41,10 @@ function Register-Breaks {
         $InitDB = $false,
         [Parameter(HelpMessage = 'Whether to dump the Break database. You can use it in conjunction with Export-Csv')]
         [switch]
-        $Dump = $false
+        $DumpRaw = $false,
+        [Parameter(HelpMessage = 'Whether to dump the Break database group by period.')]
+        [switch]
+        $DumpWork = $false
     )
     Begin {
         if (-not (Get-Module -ListAvailable PSSQLite)) { 
@@ -145,8 +156,13 @@ function Register-Breaks {
             return
         }
         
-        if ($Dump) {
+        if ($DumpRaw) {
             Invoke-SqliteQuery -Query 'SELECT * FROM Break;' -DataSource $BreakDB
+            return
+        }
+
+        if ($DumpWork) {
+            Invoke-SqliteQuery -Query "SELECT StartDate, SUM(strftime('%s', StopDate) - strftime('%s', StartDate)) AS DeltaSecond FROM Break WHERE Status = 'Working' AND Consolidated = '1' GROUP BY strftime('%Y%m%d', StartDate)" -DataSource $BreakDB
             return
         }
 
@@ -199,7 +215,7 @@ function Register-Breaks {
                         $sd = $LastPeriod.StartDate
                     }
                     else {
-                        $sd = "..."
+                        $sd = '...'
                     }
                     Write-Host "[$Now] | Idle Time (0'): Updating working Period ($sd -> ${Now})"
                 }
