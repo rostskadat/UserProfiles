@@ -28,9 +28,14 @@ function Search-Jar {
     ## Create the URL that contains the Twitter search results
     Add-Type -AssemblyName System.IO.Compression, System.IO.Compression.FileSystem
     $jars = Get-ChildItem -Recurse *.jar -ErrorAction SilentlyContinue
-
+    $Verbose = $PSBoundParameters.ContainsKey("Verbose") -and $PSBoundParameters["Verbose"]
     foreach ($jar in $jars) {
         $archive = [System.IO.Compression.ZipFile]::OpenRead($jar)
-        $archive.Entries | Where-Object { $_.FullName -match $Class } | Select-Object -First 1 | ForEach-Object { $jar.FullName }
+        $archive.Entries | Where-Object { $_.FullName -match $Class } | Select-Object -First 1 | ForEach-Object { 
+            $jar
+            if ($Verbose) {
+                Write-Host $_ -ForegroundColor Green
+            }
+        }
     }
 }
