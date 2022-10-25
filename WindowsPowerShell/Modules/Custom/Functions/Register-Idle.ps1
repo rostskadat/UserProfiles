@@ -185,16 +185,16 @@ function Register-Idle {
 
         if ($Dump) {
             if ($ByDay) {
-                $Result = Invoke-SqliteQuery -Query "SELECT StartDate, Consolidated, SUM(strftime('%s', StopDate) - strftime('%s', StartDate)) AS DeltaSecond FROM WorkingPeriods GROUP BY strftime('%Y%m%d', StartDate) ORDER BY StartDate" -DataSource $IdleDB
-                $FormatBlock = { [PSCustomObject] @{ 'Date' = ([DateTime]$_.StartDate).Date ; 'Hours' = [System.Math]::Truncate($_.DeltaSecond / 3600) ; 'Minutes' = [System.Math]::Truncate(($_.DeltaSecond % 3600) / 60) } }
+                $Result = Invoke-SqliteQuery -Query "SELECT strftime('%Y-%m-%dT00:00:00', StartDate) AS Date, Consolidated, SUM(strftime('%s', StopDate) - strftime('%s', StartDate)) AS DeltaSecond FROM WorkingPeriods GROUP BY strftime('%Y%m%d', StartDate) ORDER BY StartDate" -DataSource $IdleDB
+                $FormatBlock = { [PSCustomObject] @{ 'Date' = $_.Date ; 'Consolidated' = $_.Consolidated ; 'Hours' = [System.Math]::Truncate($_.DeltaSecond / 3600) ; 'Minutes' = [System.Math]::Truncate(($_.DeltaSecond % 3600) / 60) } }
             }
             elseif ($ByWeek) {
                 $Result = Invoke-SqliteQuery -Query "SELECT strftime('%W', StartDate) AS Week, Consolidated, SUM(strftime('%s', StopDate) - strftime('%s', StartDate)) AS DeltaSecond FROM WorkingPeriods GROUP BY strftime('%Y%W', StartDate) ORDER BY StartDate" -DataSource $IdleDB
-                $FormatBlock = { [PSCustomObject] @{ 'Week' = $_.Week ; 'Hours' = [System.Math]::Truncate($_.DeltaSecond / 3600) ; 'Minutes' = [System.Math]::Truncate(($_.DeltaSecond % 3600) / 60) } }
+                $FormatBlock = { [PSCustomObject] @{ 'Week' = $_.Week ; 'Consolidated' = $_.Consolidated ; 'Hours' = [System.Math]::Truncate($_.DeltaSecond / 3600) ; 'Minutes' = [System.Math]::Truncate(($_.DeltaSecond % 3600) / 60) } }
             }
             else {
-                $Result = Invoke-SqliteQuery -Query 'SELECT * FROM WorkingPeriods ORDER BY StartDate' -DataSource $IdleDB
-                $FormatBlock = { $_ }
+                $Result = Invoke-SqliteQuery -Query "SELECT StartDate, StopDate, Consolidated, (strftime('%s', StopDate) - strftime('%s', StartDate)) AS DeltaSecond FROM WorkingPeriods ORDER BY StartDate" -DataSource $IdleDB
+                $FormatBlock = { [PSCustomObject] @{ 'StartDate' = $_.StartDate ; 'StopDate' = $_.StopDate ; 'Consolidated' = $_.Consolidated ; 'Hours' = [System.Math]::Truncate($_.DeltaSecond / 3600) ; 'Minutes' = [System.Math]::Truncate(($_.DeltaSecond % 3600) / 60) } }
             }
             if ($Readable) {
                 $Result | ForEach-Object $FormatBlock
