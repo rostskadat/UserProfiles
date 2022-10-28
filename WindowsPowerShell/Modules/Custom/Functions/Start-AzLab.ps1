@@ -29,7 +29,10 @@ function Start-AzLab {
         $Password,
         [Parameter()]
         [ValidateNotNullOrEmpty()]
-        $Location = "East US",
+        $Location = 'East US',
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        $TenantId = '47da9ac4-f585-4753-bf40-7c7c8fe635cf',
         [Parameter()]
         $ResourceGroup
     )
@@ -38,9 +41,18 @@ function Start-AzLab {
     $SecureString = $Password | ConvertTo-SecureString -AsPlainText -Force
     $Credential = New-Object System.Management.Automation.PSCredential -ArgumentList $Username, $SecureString
     # The "Pluralsight Labs Production" tenant...
-    Connect-AzAccount -Credential $Credential -TenantId "47da9ac4-f585-4753-bf40-7c7c8fe635cf"
+    Connect-AzAccount -Credential $Credential -TenantId $TenantId
     if ($null -ne $ResourceGroup) {
         Set-AzDefault -ResourceGroupName $ResourceGroup
     }
+
+    $ServicePrincipal = New-AzADServicePrincipal -DisplayName 'WindowsPowerShellLab' -Role 'Contributor'
+    $Subscription = Get-AzSubscription
+
+    $env:ARM_CLIENT_ID = $ServicePrincipal.AppId
+    $env:ARM_SUBSCRIPTION_ID = $Subscription.Id
+    $env:ARM_TENANT_ID = $Subscription.TenantId
+    $env:ARM_CLIENT_SECRET = $ServicePrincipal.PasswordCredentials.SecretText
+
     Write-Host -ForegroundColor Green "Once the Lab finished you can call the 'Disconnect-AzAccount' cmdlet" 
 }
