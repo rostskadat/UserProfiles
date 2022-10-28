@@ -30,12 +30,10 @@ Create the Scheduled Task. Note that the Trigger (AtLogon) fails, and must be se
 function Register-Idle {
     [CmdletBinding()]
     Param(
-        [Parameter(ParameterSetName = 'init')]
-        [Parameter(HelpMessage = 'Create an initialize the database to register working period')]
+        [Parameter(ParameterSetName = 'init', HelpMessage = 'Create an initialize the database to register working period')]
         [switch]
         $InitDB = $false,
-        [Parameter(ParameterSetName = 'init')]
-        [Parameter(HelpMessage = 'Create the schedule task to run the script at logon')]
+        [Parameter(ParameterSetName = 'init', HelpMessage = 'Create the schedule task to run the script at logon')]
         [switch]
         $Schedule = $false,
         [Parameter(ParameterSetName = 'run')]
@@ -70,7 +68,11 @@ function Register-Idle {
         [Parameter(ParameterSetName = 'dump')]
         [Parameter(HelpMessage = 'Whether to dump the database in a human readable format. Imply -Dump.')]
         [switch]
-        $Readable = $false    
+        $Readable = $false,
+        [Parameter(ParameterSetName = 'dump')]
+        [Parameter(HelpMessage = 'Only display today''s count. Imply -Dump.')]
+        [switch]
+        $Today
     )
     Begin {
         if (-not (Get-Module -ListAvailable PSSQLite)) { 
@@ -184,7 +186,11 @@ function Register-Idle {
         
 
         if ($Dump) {
-            if ($ByDay) {
+            if ($Today) {
+                $Result = Invoke-SqliteQuery -Query "SELECT strftime('%Y-%m-%dT00:00:00', StartDate) AS Date, Consolidated, SUM(strftime('%s', StopDate) - strftime('%s', StartDate)) AS DeltaSecond FROM WorkingPeriods GROUP BY strftime('%Y%m%d', StartDate) ORDER BY StartDate" -DataSource $IdleDB | Select-Object -Last 1
+                $FormatBlock = { [PSCustomObject] @{ 'Date' = $_.Date ; 'Consolidated' = $_.Consolidated ; 'Hours' = [System.Math]::Truncate($_.DeltaSecond / 3600) ; 'Minutes' = [System.Math]::Truncate(($_.DeltaSecond % 3600) / 60) } }
+            } 
+            elseif ($ByDay) {
                 $Result = Invoke-SqliteQuery -Query "SELECT strftime('%Y-%m-%dT00:00:00', StartDate) AS Date, Consolidated, SUM(strftime('%s', StopDate) - strftime('%s', StartDate)) AS DeltaSecond FROM WorkingPeriods GROUP BY strftime('%Y%m%d', StartDate) ORDER BY StartDate" -DataSource $IdleDB
                 $FormatBlock = { [PSCustomObject] @{ 'Date' = $_.Date ; 'Consolidated' = $_.Consolidated ; 'Hours' = [System.Math]::Truncate($_.DeltaSecond / 3600) ; 'Minutes' = [System.Math]::Truncate(($_.DeltaSecond % 3600) / 60) } }
             }
