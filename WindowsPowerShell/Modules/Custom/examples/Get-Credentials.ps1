@@ -1,0 +1,1 @@
+$Credential = $host.ui.PromptForCredential('Need credentials', 'Please enter your user name and password.', '', 'NetBiosUserName')
