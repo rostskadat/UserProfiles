@@ -1,4 +1,7 @@
-Set-PSRepository -Name "PSGallery" -InstallationPolicy Trusted
+# This is only valid if PowerShellGet is installed. 
+#   However PowerShellGet is ***slow***
+# Install-Module -Name PowerShellGet -AllowClobber -Scope CurrentUser
+# Set-PSRepository -Name "PSGallery" -InstallationPolicy Trusted
 
 #------------------------------------------------------------------------------
 #
@@ -9,7 +12,7 @@ Set-PSRepository -Name "PSGallery" -InstallationPolicy Trusted
 #Foreach ($Package in $Packages) {
 #    if (-not (Get-Module -ListAvailable $Package)) { 
 #        Write-Host "Installing $Package ..."
-#        Install-Module -Name $Package -Scope AllUsers -AllowClobber -Force
+#        Install-Module -Name $Package -Scope CurrentUser -AllowClobber -Force
 #    }
 #}
 
