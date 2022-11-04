@@ -46,13 +46,19 @@ function Start-AzLab {
         Set-AzDefault -ResourceGroupName $ResourceGroup
     }
 
-    $ServicePrincipal = New-AzADServicePrincipal -DisplayName 'WindowsPowerShellLab' -Role 'Contributor'
-    $Subscription = Get-AzSubscription
+    # that does not work for PluralSight :(
+    try {
+        $ServicePrincipal = New-AzADServicePrincipal -DisplayName 'WindowsPowerShellLab' -Role 'Contributor'
+        $Subscription = Get-AzSubscription
 
-    $env:ARM_CLIENT_ID = $ServicePrincipal.AppId
-    $env:ARM_SUBSCRIPTION_ID = $Subscription.Id
-    $env:ARM_TENANT_ID = $Subscription.TenantId
-    $env:ARM_CLIENT_SECRET = $ServicePrincipal.PasswordCredentials.SecretText
+        $env:ARM_CLIENT_ID = $ServicePrincipal.AppId
+        $env:ARM_SUBSCRIPTION_ID = $Subscription.Id
+        $env:ARM_TENANT_ID = $Subscription.TenantId
+        $env:ARM_CLIENT_SECRET = $ServicePrincipal.PasswordCredentials.SecretText
 
-    Write-Host -ForegroundColor Green "Once the Lab finished you can call the 'Disconnect-AzAccount' cmdlet" 
+        Write-Host -ForegroundColor Green "Once the Lab finished you can call the 'Disconnect-AzAccount' cmdlet" 
+    }
+    catch {
+        Write-Host -ForegroundColor Red "Could not setup the environment variable. You might not be able to connect with terraform"
+    }
 }
