@@ -19,6 +19,11 @@ function Update-Computer {
     #>
     Set-StrictMode -Version 3
 
+    if ([environment]::OSVersion.Platform -eq 'Unix') {
+        Write-Warning "This cmdlet is not available on this platform."
+        return
+    }
+
     if (Test-Administrator) {
         Get-WindowsUpdate
     }

@@ -26,9 +26,13 @@ function Search-ChocoLog {
     )
     Set-StrictMode -Version 3
 
+    if ([environment]::OSVersion.Platform -eq 'Unix') {
+        Write-Warning "This cmdlet is not available on this platform."
+        return
+    }
+
     $CHOCO_INSTALL_LOG = "C:\ProgramData\chocolatey\logs\chocolatey.log"
     if (Test-Path $CHOCO_INSTALL_LOG) {
         Get-Content $CHOCO_INSTALL_LOG | Select-String $Pattern
-
     }
 }
