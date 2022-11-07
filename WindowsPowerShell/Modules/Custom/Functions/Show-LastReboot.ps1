@@ -19,6 +19,11 @@ function Show-LastReboot {
         $Days = 10
     )
     Process {
+        if ([environment]::OSVersion.Platform -eq 'Unix') {
+            Write-Warning "This cmdlet is not available on this platform."
+            return
+        }
+    
         -1..-$Days | ForEach-Object {
             $When =  (Get-Date).AddDays($_)
             $After =  Get-Date $When  -Hour 0  -Minute 0  -Second 0

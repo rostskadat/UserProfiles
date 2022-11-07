@@ -24,6 +24,11 @@ function Suspend-Computer {
     )
     Set-StrictMode -Version 3
 
+    if ([environment]::OSVersion.Platform -eq 'Unix') {
+        Write-Warning "This cmdlet is not available on this platform."
+        return
+    }
+
     if ($Seconds -gt 0) {
         Write-Host "Suspending in $Seconds second(s) ..."
     } else {
